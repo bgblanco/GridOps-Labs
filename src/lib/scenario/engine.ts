@@ -485,6 +485,66 @@ export function buildReplay(scenario: Scenario, state: LabState): ReplayRow[] {
     }));
 }
 
+/** The learner's current objective, from the active phase. Presentation only. */
+export function objectiveForPhase(scenario: Scenario, state: LabState): string | undefined {
+  return currentPhase(scenario, state).objective;
+}
+
+export interface SystemChangeRow {
+  seq: number;
+  time: string;
+  label: string;
+  detail?: string;
+  lane: NonNullable<LogEntry["lane"]>;
+}
+
+/**
+ * Compact, in-scenario "System Changes" feed: the operations and outcomes the learner
+ * has caused, newest first. Built strictly from the engine log — never fabricated.
+ * Distinct from buildReplay (the full debrief timeline).
+ */
+export function systemChanges(scenario: Scenario, state: LabState): SystemChangeRow[] {
+  const labels: Partial<Record<LogType, string>> = {
+    deviceOperated: "{detail}",
+    faultIsolated: "Fault section isolated · {detail}",
+    normalSourceRestored: "Restored from normal source · {detail}",
+    decisionSubmitted: "Restoration path executed · {detail}",
+    consequenceShown: "Result · {detail}",
+    scenarioStarted: "{detail}",
+  };
+  return state.log
+    .filter((e) => labels[e.type] !== undefined)
+    .map((e) => ({
+      seq: e.seq,
+      time: formatSimClock(scenario.clock.start, e.sim),
+      label: (labels[e.type] ?? e.type).replace("{detail}", e.detail ?? ""),
+      detail: e.detail,
+      lane: e.lane ?? "system",
+    }))
+    .reverse();
+}
+
+/**
+ * Seq of the most recent meaningful electrical change (a device operation or an outcome).
+ * The UI uses this to trigger change-focus and before/current snapshots. Info views and
+ * selections do not advance it. 0 when nothing has changed yet.
+ */
+export function meaningfulChangeSeq(state: LabState): number {
+  for (let i = state.log.length - 1; i >= 0; i--) {
+    const e = state.log[i];
+    if (e.lane === "device" || e.lane === "outcome") return e.seq;
+  }
+  return 0;
+}
+
+/** The device ids operated by the most recent device operation (for change-focus). */
+export function lastChangedDevices(state: LabState): string[] {
+  for (let i = state.log.length - 1; i >= 0; i--) {
+    if (state.log[i].type === "deviceOperated") return (state.log[i].ref ?? "").split(",").filter(Boolean);
+  }
+  return [];
+}
+
 export function liveSystemView(scenario: Scenario, state: LabState) {
   const energization = computeEnergization(scenario, state.devices, state.faultedEdges);
   const out = state.started || state.phaseIndex > 0

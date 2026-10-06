@@ -23,6 +23,7 @@ export const COLORS = {
   dead: "var(--dead)",
   fault: "var(--fault)",
   alarm: "var(--alarm)",
+  select: "var(--select)",
   ink: "var(--desk-ink)",
   muted: "var(--desk-muted)",
   bg: "var(--desk-2)",

@@ -38,6 +38,7 @@ export function AboutView() {
           {site.founder.body.map((p, i) => (
             <p key={i}>{p}</p>
           ))}
+          <p>The work draws on a mix of distribution operations, control-system, and software experience, applied to scenario-based training. GridOps Labs is developed by Sentinel Peak Solutions.</p>
         </div>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link href={CTA.primary.href} className="btn btn-primary">{CTA.primary.label}</Link>

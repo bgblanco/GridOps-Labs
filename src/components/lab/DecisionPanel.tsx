@@ -9,14 +9,18 @@ export interface DecisionPanelProps {
   point: DecisionPoint;
   inspected: Record<string, string[]>;
   draft: DecisionDraft;
+  /** Path group currently lit on the one-line (the tie being inspected). */
+  activePath?: string;
   onInspect: (optionId: string, category: string) => void;
+  /** Fired when a tie's inspection panel is opened — lights its path on the map. */
+  onInspectOption?: (optionId: string) => void;
   onChoose: (optionId: string) => void;
   onReasons: (ids: string[]) => void;
   onText: (t: string) => void;
   onSubmit: () => void;
 }
 
-export function DecisionPanel({ point, inspected, draft, onInspect, onChoose, onReasons, onText, onSubmit }: DecisionPanelProps) {
+export function DecisionPanel({ point, inspected, draft, activePath, onInspect, onInspectOption, onChoose, onReasons, onText, onSubmit }: DecisionPanelProps) {
   const chosen = point.options.find((o) => o.id === draft.optionId);
   const ready = Boolean(chosen && draft.reasonIds.length);
   return (
@@ -32,6 +36,8 @@ export function DecisionPanel({ point, inspected, draft, onInspect, onChoose, on
             option={o}
             inspected={inspected[o.id] ?? []}
             selected={draft.optionId === o.id}
+            pathActive={Boolean(o.pathGroup && activePath === o.pathGroup)}
+            onExpand={() => onInspectOption?.(o.id)}
             onInspect={onInspect}
             onChoose={onChoose}
           />
@@ -50,7 +56,7 @@ export function DecisionPanel({ point, inspected, draft, onInspect, onChoose, on
           />
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <button type="button" className="btn btn-primary" disabled={!ready} onClick={onSubmit}>
-              Close {chosen.deviceId}
+              Execute — close {chosen.trainingLabel ?? chosen.label}
             </button>
             {!draft.reasonIds.length && <span className="text-sm text-desk-muted">Choose at least one reason to continue.</span>}
           </div>

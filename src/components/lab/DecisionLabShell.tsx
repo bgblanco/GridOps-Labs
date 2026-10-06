@@ -13,12 +13,22 @@ import {
   getDecisionPoint,
   inspectionCoverage,
   labReducer,
+  lastChangedDevices,
   liveSystemView,
+  meaningfulChangeSeq,
+  objectiveForPhase,
+  systemChanges,
   type LabAction,
 } from "@/lib/scenario/engine";
 import { trackLogEntries } from "@/lib/analytics/observe";
+import { track } from "@/lib/analytics/tracker";
 import { OneLineCanvas } from "./oneline/OneLineCanvas";
 import { SystemStatePanel } from "./SystemStatePanel";
+import { CurrentObjective } from "./CurrentObjective";
+import { LabProgress } from "./LabProgress";
+import { SystemChangeLog } from "./SystemChangeLog";
+import { StateChangeAnnouncement } from "./StateChangeAnnouncement";
+import { BeforeCurrentToggle, type GridSnapshot } from "./BeforeCurrentToggle";
 import { InformationCard } from "./InformationCard";
 import { FieldReportCard } from "./FieldReportCard";
 import { AlarmCard } from "./AlarmCard";
@@ -54,10 +64,20 @@ export function DecisionLabShell({ scenario, headingLevel = 2 }: { scenario: Sce
   const [state, dispatch] = useLab(scenario);
   const [lockoutShown, setLockoutShown] = useState(false);
   const [highlight, setHighlight] = useState<string[]>([]);
+  const [inspectPath, setInspectPath] = useState<string | undefined>();
+  const [changedIds, setChangedIds] = useState<string[]>([]);
+  const [mapOpen, setMapOpen] = useState(true);
+  const [beforeSnapshot, setBeforeSnapshot] = useState<GridSnapshot | null>(null);
   const phase = currentPhase(scenario, state);
   const view = liveSystemView(scenario, state);
   const panelRef = useRef<HTMLDivElement>(null);
   const shellRef = useRef<HTMLElement>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const prevChangeSeq = useRef(0);
+  const beforeRef = useRef<GridSnapshot | null>(null);
+  if (beforeRef.current === null) {
+    beforeRef.current = { devices: { ...scenario.initialState.devices }, faultedEdges: [...scenario.initialState.faultedEdges], time: scenario.clock.start };
+  }
   const now = () => Date.now();
   const H = headingLevel === 2 ? "h2" : "h3";
   const { metadata: meta, environment: env } = scenario;
@@ -87,7 +107,31 @@ export function DecisionLabShell({ scenario, headingLevel = 2 }: { scenario: Sce
     if (phase.type === "debrief" && !state.completed) dispatch({ type: "COMPLETE", now: Date.now() });
   }, [phase.type, state.completed, dispatch]);
 
+  // Change focus: when the learner causes a meaningful electrical change, snapshot the
+  // prior state (for Before/Current), ring the changed devices for ~1s, and on mobile
+  // bring the map into view. Info views/selections do not trigger this.
+  const changeSeq = meaningfulChangeSeq(state);
+  useEffect(() => {
+    if (!changeSeq || changeSeq === prevChangeSeq.current) return;
+    setBeforeSnapshot(beforeRef.current);
+    beforeRef.current = { devices: { ...state.devices }, faultedEdges: [...state.faultedEdges], time: formatSimClock(scenario.clock.start, state.sim) };
+    // The executed restoration tie closes via the decision (not a deviceOperated log entry),
+    // so ring it explicitly; otherwise ring the last operated device.
+    const submittedDevice = state.submitted
+      ? scenario.decisionPoints.flatMap((d) => d.options).find((o) => o.id === state.submitted!.optionId)?.deviceId
+      : undefined;
+    setChangedIds(submittedDevice ? [submittedDevice] : lastChangedDevices(state));
+    setMapOpen(true);
+    if (typeof window !== "undefined" && window.innerWidth < 1024) mapRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    prevChangeSeq.current = changeSeq;
+    const t = window.setTimeout(() => setChangedIds([]), 1000);
+    return () => window.clearTimeout(t);
+  }, [changeSeq, scenario, state]);
+
   const consequence = getConsequence(scenario, state.consequenceId);
+  const objective = objectiveForPhase(scenario, state);
+  const changeRows = useMemo(() => systemChanges(scenario, state), [scenario, state]);
+  const progressSteps = useMemo(() => scenario.phases.map((p) => p.step), [scenario.phases]);
 
   // What the one-line should show right now
   const preEvent = phase.type === "event" && !lockoutShown;
@@ -127,11 +171,52 @@ export function DecisionLabShell({ scenario, headingLevel = 2 }: { scenario: Sce
   const advance = () => dispatch({ type: "NEXT", now: now() });
   const reset = () => {
     setHighlight([]);
+    setInspectPath(undefined);
+    setChangedIds([]);
+    setBeforeSnapshot(null);
+    setMapOpen(true);
+    prevChangeSeq.current = 0;
+    beforeRef.current = { devices: { ...scenario.initialState.devices }, faultedEdges: [...scenario.initialState.faultedEdges], time: scenario.clock.start };
     dispatch({ type: "RESET" });
     shellRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const coverage = useMemo(() => inspectionCoverage(scenario, state), [scenario, state]);
+
+  const liveMap = (
+    <div className="diagram-scroll">
+      <OneLineCanvas
+        scenario={scenario}
+        devices={devices}
+        faultedEdges={faulted}
+        showFault={showFault}
+        selectable={selectable}
+        emphasized={emphasized}
+        changedDeviceIds={changedIds}
+        highlightGroups={highlightGroups}
+        pathGroup={phase.type === "decide" ? inspectPath : undefined}
+        onSelectDevice={onSelectDevice}
+        hideFeeders={hideFeeders}
+        title={`${env.grid} one-line, ${env.primaryFeeder}. ${view.customersInterrupted.toLocaleString("en-US")} customers interrupted.`}
+        description="Fictional training one-line. Solid teal lines are energized; dashed lines are de-energized. Open devices show OPEN; the blue outline marks an inspected restoration path."
+      />
+    </div>
+  );
+  const mapNode =
+    beforeSnapshot && phase.type !== "event" ? (
+      <BeforeCurrentToggle
+        scenario={scenario}
+        before={beforeSnapshot}
+        currentTime={formatSimClock(scenario.clock.start, state.sim)}
+        showFault={showFault}
+        hideFeeders={hideFeeders}
+        onView={() => track("beforeCurrentViewed", { phase: phase.id }, meta.id)}
+      >
+        {liveMap}
+      </BeforeCurrentToggle>
+    ) : (
+      liveMap
+    );
 
   return (
     <section ref={shellRef} className="on-desk scroll-mt-20 overflow-hidden rounded-[4px] border border-desk-rule bg-desk-2 text-desk-ink" aria-label={`${meta.series}: ${meta.id} ${meta.title}`}>
@@ -142,10 +227,16 @@ export function DecisionLabShell({ scenario, headingLevel = 2 }: { scenario: Sce
           <H className="font-display text-lg font-semibold text-desk-ink sm:text-xl">
             {meta.id} — {meta.title}
           </H>
+          {state.started && (
+            <p className="nameplate mt-1 text-[0.66rem] text-desk-muted">
+              {env.grid} <span className="text-desk-rule">•</span> {env.primaryFeeder} <span className="text-desk-rule">•</span>{" "}
+              <span className="mono tracking-normal text-desk-ink">{formatSimClock(scenario.clock.start, state.sim)}</span>
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs text-desk-muted">
-            {env.grid} · <span className="nameplate text-[0.7rem]">Public beta</span>
+            <span className="nameplate text-[0.7rem]">Public beta</span>
           </span>
           {state.started && (
             <button type="button" onClick={reset} className="btn btn-desk min-h-[40px] px-3 text-sm">
@@ -156,25 +247,7 @@ export function DecisionLabShell({ scenario, headingLevel = 2 }: { scenario: Sce
       </header>
 
       {/* Progress rail */}
-      <nav aria-label="Scenario progress" className="diagram-scroll border-b border-desk-rule">
-        <ol className="flex min-w-max">
-          {scenario.phases.map((p, i) => {
-            const status = i < phaseIdx ? "done" : i === phaseIdx ? "current" : "todo";
-            return (
-              <li
-                key={p.id}
-                aria-current={status === "current" ? "step" : undefined}
-                className={`flex items-center gap-2 border-r border-desk-rule px-3 py-2 text-xs sm:px-4 ${status === "current" ? "bg-desk-3 text-desk-ink" : status === "done" ? "text-desk-ink" : "text-desk-muted"}`}
-              >
-                <span className="mono" style={{ color: status === "current" ? "var(--accent)" : undefined }}>
-                  {status === "done" ? "✓" : String(i + 1).padStart(2, "0")}
-                </span>
-                <span className="nameplate text-[0.7rem]">{p.step}</span>
-              </li>
-            );
-          })}
-        </ol>
-      </nav>
+      <LabProgress steps={progressSteps} currentIndex={phaseIdx} />
 
       {/* Intro (event phase, not started) */}
       {phase.type === "event" && !state.started && (
@@ -202,34 +275,31 @@ export function DecisionLabShell({ scenario, headingLevel = 2 }: { scenario: Sce
       {/* Live desk */}
       {state.started && (
         <>
-          <SystemStatePanel feederLabel={env.primaryFeeder} clock={formatSimClock(scenario.clock.start, state.sim)} customersOut={preEvent ? 0 : view.customersInterrupted} feederStatus={feederStatus.text} statusTone={feederStatus.tone} />
-          {phase.type !== "event" && phase.type !== "debrief" && phase.story && (
-            <StoryScene story={phase.story} variant="banner" className="border-b border-desk-rule" />
-          )}
-          {phase.type !== "debrief" && (
-            <div className="diagram-scroll border-b border-desk-rule">
-              <OneLineCanvas
-                scenario={scenario}
-                devices={devices}
-                faultedEdges={faulted}
-                showFault={showFault}
-                selectable={selectable}
-                emphasized={emphasized}
-                highlightGroups={highlightGroups}
-                onSelectDevice={onSelectDevice}
-                hideFeeders={hideFeeders}
-                title={`${env.grid} one-line, ${env.primaryFeeder}. ${view.customersInterrupted.toLocaleString("en-US")} customers interrupted.`}
-                description="Fictional training one-line. Solid teal lines are energized; dashed lines are de-energized."
-              />
-            </div>
-          )}
-
-          <div ref={panelRef} className="scroll-mt-20 p-4 sm:p-6">
-            {state.notice && (phase.type === "isolate" || phase.type === "restore") && (
-              <p role="status" className="rise-in mb-4 rounded-[3px] border px-3 py-2 text-sm" style={{ borderColor: state.notice.tone === "caution" ? "var(--alarm)" : state.notice.tone === "ok" ? "var(--live)" : "var(--desk-rule)", color: state.notice.tone === "caution" ? "var(--alarm)" : "var(--desk-ink)" }}>
-                {state.notice.text}
-              </p>
+          <div className={phase.type === "debrief" ? "" : "lg:grid lg:grid-cols-[minmax(340px,1.02fr)_1fr] lg:items-start"}>
+            {phase.type !== "debrief" && (
+              <div className="border-b border-desk-rule lg:sticky lg:top-16 lg:self-start lg:border-b-0 lg:border-r">
+                <CurrentObjective objective={objective} className="border-b border-desk-rule" />
+                <SystemStatePanel feederLabel={env.primaryFeeder} clock={formatSimClock(scenario.clock.start, state.sim)} customersOut={preEvent ? 0 : view.customersInterrupted} feederStatus={feederStatus.text} statusTone={feederStatus.tone} />
+                <div className="border-b border-desk-rule px-4 py-2 sm:px-5">
+                  <StateChangeAnnouncement message={state.notice?.text} tone={state.notice?.tone} />
+                </div>
+                {phase.type !== "event" && phase.story && <StoryScene story={phase.story} variant="banner" className="border-b border-desk-rule" />}
+                <div ref={mapRef} className="scroll-mt-16">
+                  <button
+                    type="button"
+                    onClick={() => setMapOpen((v) => !v)}
+                    aria-expanded={mapOpen}
+                    className="flex w-full items-center justify-between border-b border-desk-rule px-4 py-2 text-left lg:hidden"
+                  >
+                    <span className="nameplate text-[0.66rem] text-desk-muted">System map</span>
+                    <span className="mono text-xs text-desk-muted">{mapOpen ? "Hide ▴" : "Show ▾"}</span>
+                  </button>
+                  <div className={`${mapOpen ? "block" : "hidden"} lg:block`}>{mapNode}</div>
+                </div>
+              </div>
             )}
+
+          <div ref={panelRef} className="min-w-0 scroll-mt-20 p-4 sm:p-6">
 
             {phase.type === "event" && (
               <div className="grid gap-4">
@@ -353,12 +423,25 @@ export function DecisionLabShell({ scenario, headingLevel = 2 }: { scenario: Sce
                 point={getDecisionPoint(scenario, phase.decisionPointId)}
                 inspected={state.inspected}
                 draft={state.draft}
+                activePath={inspectPath}
+                onInspectOption={(optionId) => {
+                  const option = getDecisionPoint(scenario, phase.decisionPointId).options.find((o) => o.id === optionId);
+                  setInspectPath(option?.pathGroup);
+                  if (option?.pathGroup) track("tieInspectionOpened", { ref: optionId, phase: phase.id }, meta.id);
+                }}
                 onInspect={(optionId, category) => {
                   dispatch({ type: "INSPECT", optionId, category, now: now() });
-                  const item = getDecisionPoint(scenario, phase.decisionPointId).options.find((o) => o.id === optionId)?.inspection.find((i) => i.category === category);
+                  const option = getDecisionPoint(scenario, phase.decisionPointId).options.find((o) => o.id === optionId);
+                  const item = option?.inspection.find((i) => i.category === category);
                   setHighlight(item?.highlightGroup ? [item.highlightGroup] : []);
+                  setInspectPath(option?.pathGroup);
+                  track("pathInspected", { ref: `${optionId}:${category}`, phase: phase.id }, meta.id);
                 }}
-                onChoose={(optionId) => dispatch({ type: "CHOOSE_OPTION", optionId, now: now() })}
+                onChoose={(optionId) => {
+                  dispatch({ type: "CHOOSE_OPTION", optionId, now: now() });
+                  const option = getDecisionPoint(scenario, phase.decisionPointId).options.find((o) => o.id === optionId);
+                  setInspectPath(option?.pathGroup);
+                }}
                 onReasons={(reasonIds) => dispatch({ type: "SET_REASONS", reasonIds, now: now() })}
                 onText={(text) => dispatch({ type: "SET_TEXT", text })}
                 onSubmit={() => dispatch({ type: "SUBMIT_DECISION", now: now() })}
@@ -424,6 +507,8 @@ export function DecisionLabShell({ scenario, headingLevel = 2 }: { scenario: Sce
               </div>
             )}
           </div>
+          </div>
+          {phase.type !== "debrief" && <SystemChangeLog rows={changeRows} />}
         </>
       )}
 

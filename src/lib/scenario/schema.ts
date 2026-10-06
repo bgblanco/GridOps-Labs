@@ -72,6 +72,8 @@ export interface TopologyEdge {
   feeder: string;
   /** Display id shown on the one-line (device id or section name) */
   label?: string;
+  /** Friendly training label shown dominant in training view; the asset id stays in `label`. */
+  trainingLabel?: string;
   /** Short caption under the label */
   caption?: string;
   labelAt?: "above" | "below" | "left" | "right";
@@ -81,6 +83,8 @@ export interface TopologyEdge {
   hidden?: boolean;
   /** Name of a highlight group, e.g. a limiting segment revealed by inspection */
   highlightGroup?: string;
+  /** Restoration-path membership. An edge can sit on more than one tie's source→load path. */
+  pathGroups?: string[];
 }
 
 export interface LoadBlock {
@@ -160,6 +164,10 @@ export interface InspectionItem {
 export interface DecisionOption {
   id: string;
   label: string;
+  /** Friendly training label shown dominant in training view; the tie id stays in `deviceId`. */
+  trainingLabel?: string;
+  /** Restoration path group to light up on the one-line while this option is inspected. */
+  pathGroup?: string;
   /** Device the engine closes when this option is executed */
   deviceId: string;
   /** One-line summary visible before inspection */
@@ -218,6 +226,8 @@ interface PhaseBase {
   id: string;
   /** Short name used in the progress rail */
   step: string;
+  /** Short "what am I trying to accomplish right now" line, shown as Current Objective. */
+  objective?: string;
   /** Optional story-layer pixel scene shown for this phase. */
   story?: StoryKey;
 }

@@ -12,6 +12,10 @@ export function GridOpsFooter() {
             Scenario-based proficiency training for electric distribution operations.
           </p>
           <p className="mt-2 text-sm text-muted">Different grids. Different tools. Same responsibility.</p>
+          <p className="mt-4 text-xs text-muted">
+            GridOps Labs is developed by Sentinel Peak Solutions.<br />
+            Inquiries: <a href="mailto:info@sentinelpeaksolutions.com" className="hover:text-ink hover:underline">info@sentinelpeaksolutions.com</a>
+          </p>
         </div>
         <nav aria-label="Footer">
           <p className="nameplate text-muted">Site</p>

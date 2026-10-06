@@ -5,8 +5,10 @@ import { HeroFeeder } from "@/components/site/HeroFeeder";
 import { Section } from "@/components/site/Section";
 import { SummitGridMap } from "@/components/site/SummitGridMap";
 import { UtilityUseCaseCard } from "@/components/site/Cards";
+import { InfoQualityLegend } from "@/components/lab/InfoQuality";
 import { challenges } from "@/lib/content/challenges";
 import { COMPETENCY_LABELS, COMPETENCY_ORDER } from "@/lib/content/competencies";
+import { DOMAINS } from "@/lib/content/catalog";
 import { CTA } from "@/lib/content/site";
 import { homeUseCases } from "@/lib/content/useCases";
 import { dl001 } from "@/lib/scenarios/dl-001";
@@ -26,11 +28,11 @@ export function HomeView() {
             GridOps Labs gives developing and experienced operators repeated practice working through restoration, abnormal conditions, conflicting information, loading, system configuration, and competing priorities.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <Link href="#decision-lab" className="btn btn-primary">
-              {CTA.primary.label}
+            <Link href={CTA.explore.href} className="btn btn-primary">
+              {CTA.explore.label}
             </Link>
-            <Link href="/for-utilities" className="btn btn-ghost">
-              For Utility Training Teams
+            <Link href={CTA.secondary.href} className="btn btn-ghost">
+              {CTA.secondary.label}
             </Link>
           </div>
         </div>
@@ -40,6 +42,7 @@ export function HomeView() {
       {/* 2 — Problem */}
       <Section
         id="problem"
+        tone="raised"
         eyebrow="Why repetition"
         title="Some lessons shouldn't depend on waiting for the right outage."
         intro={
@@ -67,13 +70,35 @@ export function HomeView() {
         <DecisionLabShell scenario={dl001} headingLevel={3} />
       </section>
 
-      {/* 4 — How it works */}
-      <Section id="how" eyebrow="How GridOps works" title="Encounter. Decide. Understand.">
+      {/* 3 — Scenario library + operational domains */}
+      <Section
+        id="library"
+        tone="raised"
+        eyebrow="The scenario library"
+        title="Practice the problems that don't happen often enough to train on."
+        intro={<p>50+ scenarios planned across eight operational domains and three difficulty levels. One grid, Summit Grid, with dozens of distinct operating problems — so a rare event isn&apos;t the first time an operator reasons through it.</p>}
+      >
+        <ul className="mt-10 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
+          {DOMAINS.map((d) => (
+            <li key={d.id} className="border-t-2 border-ink pt-3">
+              <h3 className="font-display text-[1.1rem] font-semibold leading-tight text-ink">{d.name}</h3>
+              <p className="mt-1.5 text-[0.95rem] leading-relaxed text-ink-2">{d.blurb}</p>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-10 flex flex-wrap gap-3">
+          <Link href={CTA.explore.href} className="btn btn-ink">{CTA.explore.label}</Link>
+          <Link href="/labs/dl-001" className="btn btn-ghost">Try DL-001 — The Easy Tie</Link>
+        </div>
+      </Section>
+
+      {/* 4 — Learn → Practice → Debrief */}
+      <Section id="how" eyebrow="How GridOps works" title="Learn the concept. Practice the decision. Debrief the reasoning.">
         <ol className="mt-10 grid gap-8 md:grid-cols-3">
           {[
-            ["Encounter", "Experience an operating situation."],
-            ["Decide", "Evaluate available information and make an operating decision."],
-            ["Understand", "Review the consequences, assumptions, and reasoning behind the decision."],
+            ["Learn", "Foundational concepts, terminology, and equipment behavior — delivered as structured digital learning built with Articulate 360 and Rise 360."],
+            ["Practice", "Apply those concepts on the desk inside a Decision Lab: grid state, SCADA, field reports, alarms, loading, and a real operating decision."],
+            ["Debrief", "See what changed and why — the information available, what was assumed, the consequence, and the competency the scenario exercised."],
           ].map(([t, b], i) => (
             <li key={t} className="border-t-2 border-ink pt-4">
               <p className="mono text-sm text-muted">{String(i + 1).padStart(2, "0")}</p>
@@ -82,18 +107,22 @@ export function HomeView() {
             </li>
           ))}
         </ol>
+        <p className="mt-6 max-w-[62ch] text-sm text-muted">
+          Concept learning can be delivered through Articulate 360 and Rise 360; the Decision Labs and Summit Grid are GridOps Labs&apos; own practice environment.
+        </p>
       </Section>
 
       {/* 5 — What we train */}
       <Section
         id="train"
+        tone="raised"
         eyebrow="What we train"
         title="Six areas of operating judgment."
         intro={<p>Each Decision Lab looks for evidence in a few of these. No single scenario measures any of them on its own.</p>}
       >
         <dl className="mt-10 grid gap-px overflow-hidden rounded-[3px] border border-rule bg-rule sm:grid-cols-2 lg:grid-cols-3">
           {COMPETENCY_ORDER.map((c) => (
-            <div key={c} className="bg-surface p-5">
+            <div key={c} className="bg-bg p-5">
               <dt className="nameplate text-ink">{COMPETENCY_LABELS[c].name}</dt>
               <dd className="mt-2 text-[0.97rem] leading-relaxed text-ink-2">{COMPETENCY_LABELS[c].description}</dd>
             </div>
@@ -113,6 +142,19 @@ export function HomeView() {
           <div className="diagram-scroll rounded-[3px] border border-rule">
             <SummitGridMap />
           </div>
+        </div>
+      </Section>
+
+      {/* 6b — Information provenance */}
+      <Section
+        id="provenance"
+        tone="raised"
+        eyebrow="Information provenance"
+        title="Every piece of information says where it came from."
+        intro={<p>GridOps labels information by how the operator knows it — not as a ranking of trust, but to make it obvious what a decision is actually resting on. It&apos;s a habit that holds up on a bad night.</p>}
+      >
+        <div className="mt-8 max-w-3xl rounded-[3px] border border-rule bg-bg p-5">
+          <InfoQualityLegend tone="page" />
         </div>
       </Section>
 
@@ -139,7 +181,7 @@ export function HomeView() {
       </section>
 
       {/* 8 — For utilities */}
-      <Section id="utilities" eyebrow="For utility training teams" title="Where GridOps fits in a training program.">
+      <Section id="utilities" tone="raised" eyebrow="For utility training teams" title="Where GridOps fits in a training program.">
         <ul className="mt-10 grid gap-x-8 gap-y-7 sm:grid-cols-2 lg:grid-cols-4">
           {homeUseCases.map((u) => (
             <UtilityUseCaseCard key={u.title} useCase={u} />

@@ -46,16 +46,25 @@ export function ConsequencePanel({ consequence, onContinue }: { consequence: Con
               <AlarmCard key={a.id} alarm={a} fresh />
             ))}
           </div>
-          <div className="rounded-[3px] border border-desk-rule bg-desk p-4 sm:p-5">
-            <p className="nameplate text-desk-muted">What happened</p>
-            <h3 className="mt-1 font-display text-2xl font-semibold text-desk-ink">{consequence.headline}</h3>
-            <div className="mt-3 grid max-w-[68ch] gap-2.5 text-[0.98rem] leading-relaxed text-desk-ink">
-              {consequence.explanation.map((p, i) => (
-                <p key={i}>{p}</p>
-              ))}
-            </div>
-            <p className="mt-4 text-xs text-desk-muted">Fictional training values. This scenario demonstrates reasoning, not a real-world switching procedure.</p>
-          </div>
+          {(() => {
+            const limited = consequence.outcome === "limited";
+            const tone = limited ? "var(--fault)" : "var(--live)";
+            return (
+              <div className="rounded-[3px] border border-desk-rule bg-desk p-4 sm:p-5" style={{ boxShadow: `inset 3px 0 0 ${tone}` }}>
+                <p className="nameplate" style={{ color: tone }}>
+                  {limited ? "New condition" : "Result"}
+                </p>
+                <h3 className="mt-1 font-display text-2xl font-semibold text-desk-ink">{consequence.headline}</h3>
+                <p className="nameplate mt-4 text-desk-muted">{limited ? "What did you miss?" : "Why this held up"}</p>
+                <div className="mt-2 grid max-w-[68ch] gap-2.5 text-[0.98rem] leading-relaxed text-desk-ink">
+                  {consequence.explanation.map((p, i) => (
+                    <p key={i}>{p}</p>
+                  ))}
+                </div>
+                <p className="mt-4 text-xs text-desk-muted">Fictional training values. This scenario demonstrates reasoning, not a real-world switching procedure.</p>
+              </div>
+            );
+          })()}
           <div>
             <button type="button" className="btn btn-primary" onClick={onContinue}>
               Go to debrief

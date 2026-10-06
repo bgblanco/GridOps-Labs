@@ -11,10 +11,14 @@ export interface DeviceNodeProps {
   /** Is either terminal energized? */
   live: boolean;
   label?: string;
+  /** Friendly training label; shown dominant with the asset id beneath. */
+  trainingLabel?: string;
   caption?: string;
   labelAt?: "above" | "below" | "left" | "right";
   selectable?: boolean;
   emphasized?: boolean;
+  /** Just changed by the learner — draws a one-shot change-focus ring. */
+  changed?: boolean;
   compact?: boolean;
   onSelect?: (id: string) => void;
 }
@@ -43,9 +47,10 @@ function Symbol({ kind, state, live, compact }: { kind: DeviceNodeProps["kind"];
   );
 }
 
-export function DeviceNode({ id, kind, geom, state, live, label, caption, labelAt = "below", selectable, emphasized, compact, onSelect }: DeviceNodeProps) {
+export function DeviceNode({ id, kind, geom, state, live, label, trainingLabel, caption, labelAt = "below", selectable, emphasized, changed, compact, onSelect }: DeviceNodeProps) {
   const { mx, my, angle } = geom;
   const stateText = kind === "tie" && state === "open" ? "N/O · OPEN" : state.toUpperCase();
+  const stateColor = state === "closed" && live ? COLORS.live : COLORS.muted;
   const off = compact ? 26 : 30;
   const pos = {
     above: { x: mx, y: my - off - 10, a: "middle" as const },
@@ -66,7 +71,7 @@ export function DeviceNode({ id, kind, geom, state, live, label, caption, labelA
     <g
       role={selectable ? "button" : undefined}
       tabIndex={selectable ? 0 : undefined}
-      aria-label={selectable ? `${label ?? id}, ${state}. Select to operate.` : undefined}
+      aria-label={selectable ? `${trainingLabel ?? label ?? id}${trainingLabel ? ` (${label ?? id})` : ""}, ${stateText}. Select to operate.` : undefined}
       onClick={selectable ? () => onSelect?.(id) : undefined}
       onKeyDown={handleKey}
       style={{ cursor: selectable ? "pointer" : "default", outline: "none" }}
@@ -76,21 +81,34 @@ export function DeviceNode({ id, kind, geom, state, live, label, caption, labelA
         <circle cx={mx} cy={my} r={compact ? 22 : 26} fill="var(--accent)" fillOpacity={0.1} stroke="var(--accent)" strokeWidth={1.5} strokeDasharray="4 3" className="device-ring" />
       )}
       {emphasized && <circle cx={mx} cy={my} r={compact ? 22 : 27} fill="none" stroke="var(--accent)" strokeWidth={2.5} />}
+      {changed && (
+        <circle cx={mx} cy={my} r={compact ? 24 : 30} fill="none" stroke={COLORS.select} strokeWidth={3} className="change-focus" aria-hidden="true" />
+      )}
       <g transform={`translate(${mx} ${my}) rotate(${angle})`}>
         <Symbol kind={kind} state={state} live={live} compact={compact} />
       </g>
-      {compact && caption && (
-        <text x={pos.x} y={labelAt === "right" ? pos.y + 8 : pos.y} textAnchor={pos.a} fontSize={24} fill={COLORS.ink} style={{ fontFamily: "var(--font-display)", fontWeight: 600, letterSpacing: "0.06em" }}>
-          {caption}
+      {compact && (trainingLabel || caption) && (
+        <text x={pos.x} y={labelAt === "right" ? pos.y + 8 : pos.y} textAnchor={pos.a} fontSize={22} fill={COLORS.ink} style={{ fontFamily: "var(--font-display)", fontWeight: 600, letterSpacing: "0.04em" }}>
+          {trainingLabel ?? caption}
         </text>
       )}
-      {!compact && label && (
+      {!compact && trainingLabel && (
+        <>
+          <text x={pos.x} y={pos.y} textAnchor={pos.a} fontSize={12.5} fill={COLORS.ink} style={{ fontFamily: "var(--font-display)", fontWeight: 600, letterSpacing: "0.04em" }}>
+            {trainingLabel}
+          </text>
+          <text x={pos.x} y={pos.y + 13} textAnchor={pos.a} fontSize={10} fill={COLORS.muted} style={{ fontFamily: "var(--font-mono)", fontWeight: 500 }}>
+            {label} · <tspan fill={stateColor} style={{ letterSpacing: "0.06em" }}>{stateText}</tspan>
+          </text>
+        </>
+      )}
+      {!compact && !trainingLabel && label && (
         <text x={pos.x} y={pos.y} textAnchor={pos.a} fontSize={12.5} fill={COLORS.ink} style={{ fontFamily: "var(--font-mono)", fontWeight: 500 }}>
           {label}
         </text>
       )}
-      {!compact && (
-        <text x={pos.x} y={pos.y + 14} textAnchor={pos.a} fontSize={10.5} fill={state === "closed" && live ? COLORS.live : COLORS.muted} style={{ fontFamily: "var(--font-display)", letterSpacing: "0.1em", fontWeight: 600 }}>
+      {!compact && !trainingLabel && (
+        <text x={pos.x} y={pos.y + 14} textAnchor={pos.a} fontSize={10.5} fill={stateColor} style={{ fontFamily: "var(--font-display)", letterSpacing: "0.1em", fontWeight: 600 }}>
           {caption ? `${caption} · ${stateText}` : stateText}
         </text>
       )}

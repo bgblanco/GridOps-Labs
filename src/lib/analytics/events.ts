@@ -1,7 +1,11 @@
 /**
  * Analytics event names. These are decoupled from the UI and from the engine:
  * the engine writes a log, and src/lib/analytics/observe.ts maps new log entries
- * to these names. Forms call track() directly for their own events.
+ * to these names. Forms and instructional interactions call track() directly.
+ *
+ * Instructional (UI-fired) events: tieInspectionOpened (a tie's path opened),
+ * pathInspected (a path category viewed), beforeCurrentViewed (Before/Current compared).
+ * No personal or utility-specific data is collected.
  */
 export type AnalyticsEventName =
   | "scenarioStarted"
@@ -9,6 +13,9 @@ export type AnalyticsEventName =
   | "faultIsolationSelections"
   | "deviceSelected"
   | "tieDetailsViewed"
+  | "tieInspectionOpened"
+  | "pathInspected"
+  | "beforeCurrentViewed"
   | "selectedTie"
   | "decisionReason"
   | "decisionTimestamp"

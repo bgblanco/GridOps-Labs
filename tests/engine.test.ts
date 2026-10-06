@@ -9,7 +9,11 @@ import {
   currentPhase,
   inspectionCoverage,
   labReducer,
+  lastChangedDevices,
   liveSystemView,
+  meaningfulChangeSeq,
+  objectiveForPhase,
+  systemChanges,
   type LabAction,
   type LabState,
 } from "../src/lib/scenario/engine";
@@ -123,6 +127,48 @@ function toDecision(opts: { wrongIsolation?: boolean; view?: string[] } = {}) {
   s = run(s, { type: "RESET" });
   assert.deepEqual(s, createInitialState(dl001));
   console.log("✓ reset");
+}
+
+// Presentation helpers: objectives, system-change feed, meaningful-change tracking
+{
+  let s = createInitialState(dl001);
+  assert.equal(meaningfulChangeSeq(s), 0, "no changes yet");
+  assert.equal(systemChanges(dl001, s).length, 0, "no system changes yet");
+
+  s = run(s, { type: "START", now: now() });
+  assert.equal(objectiveForPhase(dl001, s), "Take the desk and size up the event.");
+
+  s = run(s, { type: "NEXT", now: now() }); // review
+  assert.equal(objectiveForPhase(dl001, s), "Assess what you know before you operate anything.");
+  const beforeInfo = meaningfulChangeSeq(s);
+  s = run(s, { type: "VIEW_INFO", infoId: "info-breaker", now: now() });
+  assert.equal(meaningfulChangeSeq(s), beforeInfo, "viewing information is not a meaningful electrical change");
+
+  s = run(s, { type: "NEXT", now: now() }); // report
+  s = run(s, { type: "NEXT", now: now() }); // isolate
+  assert.equal(objectiveForPhase(dl001, s), "Isolate the reported faulted section.");
+
+  s = run(s, { type: "SELECT_DEVICE", deviceId: "SW-1201", now: now() });
+  assert.deepEqual(lastChangedDevices(s), ["SW-1201"], "north isolation is the last operated device");
+  const afterNorth = meaningfulChangeSeq(s);
+  assert.ok(afterNorth > beforeInfo, "operating a device advances the change seq");
+  s = run(s, { type: "SELECT_DEVICE", deviceId: "SW-1202", now: now() });
+  assert.ok(meaningfulChangeSeq(s) > afterNorth, "opening south isolation advances it again");
+
+  s = run(s, { type: "NEXT", now: now() }); // restore
+  assert.equal(objectiveForPhase(dl001, s), "Restore customers that can be supplied from the normal source.");
+  s = run(s, { type: "RESTORE_NORMAL", now: now() });
+
+  const rows = systemChanges(dl001, s);
+  assert.ok(rows.length >= 4, "feed has the real operations");
+  assert.equal(rows[0].time.length, 5, "HH:MM formatted, newest first");
+  const labels = rows.map((r) => r.label).join("\n");
+  assert.match(labels, /SW-1201 opened/);
+  assert.match(labels, /SW-1202 opened/);
+  assert.match(labels, /Fault section isolated/);
+  assert.match(labels, /Restored from normal source/);
+  assert.ok(!labels.includes("Breaker state"), "system changes never include info views");
+  console.log("✓ objectives, system-change feed, meaningful-change tracking");
 }
 
 // Every SME flag documented

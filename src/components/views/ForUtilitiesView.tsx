@@ -50,29 +50,49 @@ export function ForUtilitiesView() {
         </ul>
       </Section>
 
-      <Section id="founding" eyebrow="Founding Utility Program" title="Help shape the method and the library.">
+      <Section id="learn-practice" eyebrow="Where it fits" title="Learn the concept. Practice the decision.">
+        <div className="mt-8 grid gap-4 text-[1.05rem] leading-relaxed text-ink-2">
+          <p className="max-w-[68ch]">GridOps Labs combines structured digital learning with operational practice. Foundational content can be delivered through Articulate 360 and Rise 360, then reinforced through Decision Labs inside Summit Grid — concept first, judgment second, debrief last.</p>
+        </div>
+        <div className="mt-8 grid gap-px overflow-hidden rounded-[3px] border border-rule bg-rule md:grid-cols-3">
+          {[
+            ["Learn", "Concepts, terminology, equipment behavior, and operating principles — Articulate 360 / Rise 360."],
+            ["Practice", "Grid state, SCADA, field reports, alarms, loading, and real operating decisions inside Decision Labs."],
+            ["Debrief", "Consequences, information sources, assumptions, competencies, and reasoning."],
+          ].map(([t, b]) => (
+            <div key={t} className="bg-surface p-5">
+              <h3 className="nameplate text-ink">{t}</h3>
+              <p className="mt-2 text-[0.97rem] leading-relaxed text-ink-2">{b}</p>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Section id="pilot" tone="raised" eyebrow="GridOps Pilot" title="A focused way to evaluate the method with your operators.">
         <div className="mt-8 grid gap-10 lg:grid-cols-[1.2fr_1fr]">
           <div className="grid gap-4 text-[1.05rem] leading-relaxed text-ink-2">
-            <p>GridOps Labs is working with a limited number of early utility partners to help shape the Decision Lab methodology and the future scenario library.</p>
-            <p>Founding partners work directly with us on which situations get built, how scenarios are facilitated, and what a debrief should show a trainer. Scope and terms are set together for each partner.</p>
+            <p>A GridOps Pilot is a short, bounded engagement — roughly six to eight weeks — for a selected operator cohort to work through curated Decision Labs and discuss the reasoning together.</p>
+            <p>Scope and terms are set with each utility. The goal is a clear, shared read on where scenario-based deliberate practice fits alongside your qualification program, mentors, and simulators.</p>
           </div>
-          <div className="rounded-[3px] border border-rule bg-surface p-5">
-            <h3 className="nameplate text-ink">A typical starting point</h3>
-            <ol className="mt-3 grid gap-2.5 text-[0.98rem] text-ink-2">
+          <div className="rounded-[3px] border border-rule bg-bg p-5">
+            <h3 className="nameplate text-ink">Possible scope</h3>
+            <ul className="mt-3 grid gap-2.5 text-[0.98rem] text-ink-2">
               {[
-                "A conversation with your training lead about current gaps.",
-                "A small group of operators and a trainer try the public labs.",
-                "A facilitated workshop on one or two scenarios.",
-                "Agreement on what a pilot would cover.",
-              ].map((s, i) => (
+                "A selected operator cohort",
+                "A curated set of Decision Labs",
+                "Facilitator support for discussion",
+                "Scenario and competency observations",
+                "Operator feedback collected throughout",
+                "A findings discussion at the end",
+              ].map((s) => (
                 <li key={s} className="flex gap-3">
-                  <span className="mono text-muted">{i + 1}.</span>
+                  <span aria-hidden="true" className="mono text-[var(--accent-ink)]">—</span>
                   {s}
                 </li>
               ))}
-            </ol>
-            <Link href="/contact?interest=Utility%20training%20pilot" className="btn btn-ink mt-5 w-full uppercase tracking-[0.06em]">
-              {CTA.conversation.label}
+            </ul>
+            <Link href={CTA.pilot.href} className="btn btn-ink mt-5 w-full uppercase tracking-[0.06em]">
+              {CTA.pilot.label}
             </Link>
           </div>
         </div>

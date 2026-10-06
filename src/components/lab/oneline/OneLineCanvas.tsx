@@ -18,8 +18,12 @@ export interface OneLineCanvasProps {
   /** Devices the learner may click */
   selectable?: string[];
   emphasized?: string[];
+  /** Devices just changed by the learner — draw a one-shot change-focus ring. */
+  changedDeviceIds?: string[];
   highlightGroups?: string[];
   highlightTone?: "limit" | "info";
+  /** Restoration path group to light up in blue (source → tie → interrupted load). */
+  pathGroup?: string;
   onSelectDevice?: (id: string) => void;
   showLoads?: boolean;
   showSectionLabels?: boolean;
@@ -42,8 +46,10 @@ export function OneLineCanvas({
   showFault,
   selectable = [],
   emphasized = [],
+  changedDeviceIds = [],
   highlightGroups = [],
   highlightTone = "limit",
+  pathGroup,
   onSelectDevice,
   showLoads = true,
   showSectionLabels = true,
@@ -91,6 +97,18 @@ export function OneLineCanvas({
         </pattern>
       </defs>
       <rect width={width} height={height} fill={`url(#grid-${scenario.metadata.slug}${compact ? "-c" : ""})`} />
+
+      {/* Restoration-path highlight: the complete source→tie→interrupted-load path, in blue. */}
+      {pathGroup && (
+        <g aria-hidden="true">
+          {edges
+            .filter((e) => e.pathGroups?.includes(pathGroup))
+            .map((e) => {
+              const g = edgeGeom(e, nodes);
+              return <line key={`path-${e.id}`} x1={g.x1} y1={g.y1} x2={g.x2} y2={g.y2} stroke="var(--select)" strokeOpacity={0.32} strokeWidth={compact ? 12 : 16} strokeLinecap="round" />;
+            })}
+        </g>
+      )}
 
       {lines.map((e) => {
         const g = edgeGeom(e, nodes);
@@ -197,10 +215,12 @@ export function OneLineCanvas({
             state={devices[e.id] ?? e.normal ?? "open"}
             live={live}
             label={e.label}
+            trainingLabel={e.trainingLabel}
             caption={e.caption}
             labelAt={e.labelAt}
             selectable={selectable.includes(e.id)}
             emphasized={emphasized.includes(e.id)}
+            changed={changedDeviceIds.includes(e.id)}
             compact={compact}
             onSelect={onSelectDevice}
           />

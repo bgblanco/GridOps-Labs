@@ -25,8 +25,10 @@ export const site = {
 };
 
 export const CTA = {
-  primary: { label: "Try a Decision Lab", href: "/#decision-lab" },
-  secondary: { label: "Bring GridOps to Your Team", href: "/for-utilities" },
+  primary: { label: "Try a Lab", href: "/labs/dl-001" },
+  explore: { label: "Explore Decision Labs", href: "/decision-labs" },
+  secondary: { label: "For Utility Training Teams", href: "/for-utilities" },
   tertiary: { label: "Join GridOps Field Test", href: "/decision-labs#field-test" },
+  pilot: { label: "Request a Pilot", href: "/contact?interest=Decision%20Lab%20Pilot" },
   conversation: { label: "Request a Conversation", href: "/contact" },
 };

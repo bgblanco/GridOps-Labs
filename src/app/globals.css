@@ -30,13 +30,14 @@
   --dead: #53646e;         /* de-energized */
   --fault: #ec6a43;        /* fault / limit exceeded */
   --alarm: #f0b429;        /* alarm / caution */
+  --select: #3d7fe0;       /* learner selection / inspection (map path highlight) */
   --ok: #57c7b1;
 
   --q-known: #e8eef1;
   --q-indicated: #57c7b1;
   --q-reported: #f0b429;
   --q-inferred: #b39ae8;
-  --q-assumed: #8a9ca6;
+  --q-assumed: #9a8fb5;    /* muted purple: an assumption, weaker than inferred */
 
   --font-display: "Barlow Semi Condensed", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
   --font-body: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -58,6 +59,7 @@
     --rule-strong: #3a4c57;
     --accent-ink: #f0b429;
     --focus: #6fb0ff;
+    --select: #5b9dff;
     --desk: #070d11;
     --desk-2: #0f1a21;
     --desk-3: #16252e;
@@ -76,6 +78,7 @@
   --rule-strong: #3a4c57;
   --accent-ink: #f0b429;
   --focus: #6fb0ff;
+  --select: #5b9dff;
   --desk: #070d11;
   --desk-2: #0f1a21;
   --desk-3: #16252e;
@@ -104,6 +107,7 @@
   --color-dead: var(--dead);
   --color-fault: var(--fault);
   --color-alarm: var(--alarm);
+  --color-select: var(--select);
   --font-display: var(--font-display);
   --font-sans: var(--font-body);
   --font-mono: var(--font-mono);
@@ -206,8 +210,22 @@ textarea.field { min-height: 96px; resize: vertical; }
 @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 .blink { animation: blink 1s steps(1) infinite; }
 
+/* Change focus: a one-shot ring that draws attention to what just changed, then settles. */
+@keyframes change-focus { 0% { opacity: 0; transform: scale(.72); } 22% { opacity: .9; } 60% { opacity: .5; } 100% { opacity: 0; transform: scale(1.18); } }
+.change-focus { transform-box: fill-box; transform-origin: center; animation: change-focus 1s ease-out both; }
+/* Brief de-emphasis of unrelated parts of the map while a change is highlighted. */
+@keyframes state-dim { 0%, 100% { opacity: 1; } 25%, 70% { opacity: .4; } }
+.state-dim { animation: state-dim 1s ease-in-out both; }
+/* Slide-and-fade for status announcements. */
+@keyframes state-update { from { opacity: .001; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.state-update { animation: state-update .35s ease-out both; }
+
 @media (prefers-reduced-motion: reduce) {
-  .flow-anim, .fault-pulse, .pixel-rain, .pixel-flash, .blink, .rise-in { animation: none !important; }
+  .flow-anim, .fault-pulse, .pixel-rain, .pixel-flash, .blink, .rise-in,
+  .change-focus, .state-dim, .state-update { animation: none !important; }
+  /* Reduced motion: the change ring stays visible (static) instead of animating away. */
+  .change-focus { opacity: 1; }
+  .state-dim { opacity: 1; }
 }
 
 .pixelated { image-rendering: pixelated; shape-rendering: crispEdges; }

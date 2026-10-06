@@ -49,6 +49,28 @@ Transferred load is ≈ 165 A for all three. All values are listed for SME revie
 - **Information model.** DL-001 shows KNOWN, INDICATED, REPORTED, and INFERRED. ASSUMED appears in the legend.
 - **Story vs. technical layer.** Pixel art appears only in the event scene and the crew card. The one-line, values, and alarms are always crisp vector and mono type.
 
+## Presentation layer (training view)
+
+DL-001 runs at `viewLevel: "training"`, so the UI shows friendly dual labels over the asset
+ids. These are presentation only — the scenario ids, engine logic, and electrical values are
+unchanged (no new SME items):
+
+| Asset id | Training label |
+|---|---|
+| `SW-1201` | North Isolation |
+| `SW-1202` | South Isolation |
+| `TIE-121` (option A) | Near Tie |
+| `TIE-122` (option B) | West Tie |
+| `TIE-123` (option C) | South Tie |
+| `CB-120` | Feeder Breaker |
+
+Each phase carries a short `objective` ("Isolate the reported faulted section", "Restore
+customers that can be supplied from the normal source", "Evaluate the alternate paths, then
+select one"). Each tie carries a `pathGroup` (`path-A/B/C`); inspecting a tie lights its
+complete source→tie→interrupted-load path in blue on the one-line. Tie A keeps its hidden
+Mill Creek limit (`highlightGroup: "tieA-path"`) separate from the blue path glow, so the
+trap is not revealed before inspection.
+
 ## Out of scope (stated in the debrief)
 
 Load splitting across ties, cold-load pickup, voltage, protection on the alternate feeder, and real switching procedure.

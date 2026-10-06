@@ -8,24 +8,30 @@ export interface EquipmentCardProps {
   option: DecisionOption;
   inspected: string[];
   selected: boolean;
+  /** This tie's path is currently lit on the one-line. */
+  pathActive?: boolean;
   locked?: boolean;
+  /** Fired when the inspection panel is opened (lights the path on the map). */
+  onExpand?: () => void;
   onInspect: (optionId: string, category: string) => void;
   onChoose: (optionId: string) => void;
 }
 
 /** Inspection card for one restoration path. Details reveal one category at a time. */
-export function EquipmentCard({ option, inspected, selected, locked, onInspect, onChoose }: EquipmentCardProps) {
+export function EquipmentCard({ option, inspected, selected, pathActive, locked, onExpand, onInspect, onChoose }: EquipmentCardProps) {
   const [expanded, setExpanded] = useState(false);
   const panelId = `inspect-${option.id}`;
+  const name = option.trainingLabel ?? option.label;
+  const borderClass = selected ? "border-[var(--accent)]" : pathActive ? "border-[var(--select)]" : "border-desk-rule";
   return (
     <article
-      className={`flex flex-col rounded-[3px] border bg-desk transition-colors ${selected ? "border-[var(--accent)]" : "border-desk-rule"}`}
-      aria-label={`${option.label}, ${option.deviceId}`}
+      className={`flex flex-col rounded-[3px] border bg-desk transition-colors ${borderClass}`}
+      aria-label={`${name}, ${option.deviceId}`}
     >
       <header className="flex items-start justify-between gap-3 px-4 pt-4">
         <div>
-          <h4 className="font-display text-xl font-semibold text-desk-ink">{option.label}</h4>
-          <p className="mono text-sm text-desk-muted">{option.deviceId}</p>
+          <h4 className="font-display text-xl font-semibold text-desk-ink">{name}</h4>
+          <p className="mono text-sm text-desk-muted">{option.label} · {option.deviceId}</p>
         </div>
         <span className="nameplate rounded-[2px] border border-[var(--live)] px-1.5 py-0.5 text-[0.7rem] text-[var(--live)]">Available</span>
       </header>
@@ -44,10 +50,15 @@ export function EquipmentCard({ option, inspected, selected, locked, onInspect, 
           type="button"
           aria-expanded={expanded}
           aria-controls={panelId}
-          onClick={() => setExpanded((v) => !v)}
+          onClick={() => {
+            setExpanded((v) => {
+              if (!v) onExpand?.();
+              return !v;
+            });
+          }}
           className="flex min-h-[48px] w-full items-center justify-between px-4 text-left font-display font-semibold text-desk-ink hover:bg-desk-3"
         >
-          <span>Inspect path details</span>
+          <span>Inspect path</span>
           <span className="mono text-xs text-desk-muted">
             {inspected.length}/{option.inspection.length} viewed <span aria-hidden="true">{expanded ? "▴" : "▾"}</span>
           </span>
@@ -91,7 +102,7 @@ export function EquipmentCard({ option, inspected, selected, locked, onInspect, 
       <div className="mt-auto border-t border-desk-rule p-3">
         <label className={`choice ${locked ? "opacity-60" : ""}`}>
           <input type="radio" name="restoration-path" value={option.id} checked={selected} disabled={locked} onChange={() => onChoose(option.id)} />
-          <span className="font-display font-semibold">Use {option.label}</span>
+          <span className="font-display font-semibold">Select {name}</span>
         </label>
       </div>
     </article>
