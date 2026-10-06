@@ -5,3 +5,8 @@ dist-preview
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# Unoptimized source image drops at repo root (optimized copies live in public/)
+/pixel*.png
+/pixelart*.png
+/*.psd

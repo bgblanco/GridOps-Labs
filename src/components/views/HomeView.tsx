@@ -17,8 +17,8 @@ export function HomeView() {
   return (
     <>
       {/* 1 — Hero */}
-      <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 pt-10 sm:px-6 sm:pt-16 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
-        <div>
+      <section className="mx-auto max-w-6xl px-4 pt-10 sm:px-6 sm:pt-16">
+        <div className="max-w-3xl">
           <p className="nameplate text-accent-ink">Distribution operator training</p>
           <h1 className="mt-3 text-[clamp(2.5rem,6.2vw,4.3rem)] font-semibold leading-[1.02] text-ink">
             Practice the decisions before they happen on the desk.
@@ -36,7 +36,7 @@ export function HomeView() {
             </Link>
           </div>
         </div>
-        <HeroFeeder />
+        <HeroFeeder className="mt-10 sm:mt-12" />
       </section>
 
       {/* 2 — Problem */}
