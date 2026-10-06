@@ -14,7 +14,7 @@ Written by someone who has worked the desk. Direct sentences. Plain words.
 
 **Technical layer** — the one-line, device states, values, alarms, information labels. Crisp vectors, mono numerals, exact labels. Anything a learner reasons from lives here.
 
-**Story layer** — restrained pixel scenes (storm, substation, crew, dark houses). Scene-setting only. Never carries information that must be read precisely.
+**Story layer** — illustrated scene-setting art (e.g. the Summit Grid hero and scenario concept images in `public/scenarios`). Static images, scene-setting only. Never carries information that must be read precisely; the interactive one-line is the technical layer.
 
 ## Palette
 
@@ -50,7 +50,6 @@ path is drawn as a distinct blue glow **and** described in the diagram's `<desc>
 - **Barlow Semi Condensed** — headlines and nameplate labels (uppercase, tracked), echoing equipment tags.
 - **IBM Plex Sans** — body.
 - **IBM Plex Mono** — device ids, clock, values, anything that lines up.
-- **Silkscreen** — pixel captions in the story layer only.
 
 ## Layout
 

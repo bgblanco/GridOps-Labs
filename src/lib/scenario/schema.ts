@@ -216,20 +216,12 @@ export interface Consequence {
 // Phases
 // ---------------------------------------------------------------------------
 
-/**
- * Story-layer pixel scenes. Scene-setting only; never carries information a
- * learner must read precisely. Add a key here and a renderer in PixelScene.tsx.
- */
-export type StoryKey = "storm-substation" | "conductor-down" | "energized-line" | "isolation-point";
-
 interface PhaseBase {
   id: string;
   /** Short name used in the progress rail */
   step: string;
   /** Short "what am I trying to accomplish right now" line, shown as Current Objective. */
   objective?: string;
-  /** Optional story-layer pixel scene shown for this phase. */
-  story?: StoryKey;
 }
 
 export interface EventPhase extends PhaseBase {
@@ -385,6 +377,9 @@ export interface ScenarioEnvironment {
   /** Label for the status strip, e.g. "Feeder 120" */
   primaryFeeder: string;
   disclaimer: string;
+  /** Scene-setting hero image for the event intro (public/ path). */
+  heroImage?: string;
+  heroImageAlt?: string;
 }
 
 export interface ScenarioInitialState {

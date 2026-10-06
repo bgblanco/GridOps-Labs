@@ -42,6 +42,9 @@ export const dl001: Scenario = {
     primaryFeeder: "Feeder 120",
     disclaimer:
       "Summit Grid is a fictional training environment. GridOps Labs provides educational training content and does not replace employer operating procedures, qualification requirements, safety rules, or authorization to operate electrical systems.",
+    heroImage: "/summit-grid-hero.jpg",
+    heroImageAlt:
+      "Summit Electric distribution system at night in a storm: Feeder 120 is in CB-120 lockout with 1,842 customers interrupted, a normally-open tie reaches alternate source Feeder 88 — the tie is available, but is the path?",
   },
 
   topology: {
@@ -186,7 +189,6 @@ export const dl001: Scenario = {
       headline: "Feeder 120 lockout",
       lines: ["Storm cell over the east service area.", "CB-120 has tripped, reclosed, and locked out."],
       afterText: "Feeder 120 has locked out. About 2,240 customers are without power. You're on the desk.",
-      story: "storm-substation",
     },
     {
       id: "ph-review",
@@ -197,13 +199,12 @@ export const dl001: Scenario = {
       infoIds: ["info-breaker", "info-feeder", "info-fault", "info-customers", "info-alternate", "info-normal"],
       minViews: 1,
     },
-    { id: "ph-report", type: "report", step: "Report", objective: "Take the crew's report from the field.", reportId: "rpt-crew", prompt: "The patrol crew calls in.", story: "conductor-down" },
+    { id: "ph-report", type: "report", step: "Report", objective: "Take the crew's report from the field.", reportId: "rpt-crew", prompt: "The patrol crew calls in." },
     {
       id: "ph-isolate",
       type: "isolate",
       step: "Isolate",
       objective: "Isolate the reported faulted section.",
-      story: "isolation-point",
       prompt: "Select the two sectionalizing devices on either side of the reported fault to open them.",
       helpText: "Tap a device on the one-line, or use the list below. The crew's report puts the fault in Section 2.",
       requiredOpen: ["SW-1201", "SW-1202"],
@@ -228,7 +229,7 @@ export const dl001: Scenario = {
       successText: "Section 1 restored from Summit Sub. The load side is still out.",
       afterText: "180 of those customers are in the faulted section and stay out until repairs. The other 1,420 are beyond SW-1202 and can be picked up from an alternate source.",
     },
-    { id: "ph-decide", type: "decide", step: "Decide", objective: "Evaluate the alternate paths, then select one.", decisionPointId: "dp-alternate", story: "energized-line" },
+    { id: "ph-decide", type: "decide", step: "Decide", objective: "Evaluate the alternate paths, then select one.", decisionPointId: "dp-alternate" },
     { id: "ph-result", type: "consequence", step: "Result", objective: "See what your decision did to the system." },
     { id: "ph-debrief", type: "debrief", step: "Debrief", objective: "Review your reasoning." },
   ],

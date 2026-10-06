@@ -47,7 +47,7 @@ Transferred load is ≈ 165 A for all three. All values are listed for SME revie
 - **TIE B is not "easy."** It is the longest path and carries a voltage caveat, so choosing it still invites discussion.
 - **Process matters more than pick.** The debrief lists what was and wasn't opened, and evidence statements respond to inspection behavior independently of the outcome (e.g. choosing TIE A after viewing its limit gets a neutral "worth talking through").
 - **Information model.** DL-001 shows KNOWN, INDICATED, REPORTED, and INFERRED. ASSUMED appears in the legend.
-- **Story vs. technical layer.** Pixel art appears only in the event scene and the crew card. The one-line, values, and alarms are always crisp vector and mono type.
+- **Story vs. technical layer.** A static illustrated scene (the Summit Grid hero) sets the event. The one-line, values, and alarms are always crisp vector and mono type.
 
 ## Presentation layer (training view)
 

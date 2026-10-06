@@ -40,7 +40,6 @@ import { CompetencyEvidence } from "./CompetencyEvidence";
 import { FeedbackForm } from "./FeedbackForm";
 import { EarlyAccessForm } from "./EarlyAccessForm";
 import { InfoQualityLegend } from "./InfoQuality";
-import { StoryScene } from "./PixelScene";
 
 function useLab(scenario: Scenario) {
   const reducer = useCallback((s: ReturnType<typeof createInitialState>, a: LabAction) => labReducer(scenario, s, a), [scenario]);
@@ -251,8 +250,13 @@ export function DecisionLabShell({ scenario, headingLevel = 2 }: { scenario: Sce
 
       {/* Intro (event phase, not started) */}
       {phase.type === "event" && !state.started && (
-        <div className="grid gap-6 p-4 sm:p-6 md:grid-cols-[1.1fr_1fr] md:items-center">
-          <StoryScene story={phase.story ?? "storm-substation"} className="order-first overflow-hidden rounded-[3px] border border-desk-rule md:order-last" caption={`${env.grid} · east service area · ${scenario.clock.start}`} />
+        <div className="grid gap-6 p-4 sm:p-6">
+          {env.heroImage && (
+            <figure className="overflow-hidden rounded-[3px] border border-desk-rule">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={env.heroImage} alt={env.heroImageAlt ?? `${env.grid} — ${phase.headline}`} width={1400} height={613} decoding="async" className="block w-full" />
+            </figure>
+          )}
           <div>
             <p className="nameplate text-desk-muted">{env.utility}</p>
             <p className="mono mt-2 text-5xl text-desk-ink sm:text-6xl">{scenario.clock.start}</p>
@@ -283,7 +287,6 @@ export function DecisionLabShell({ scenario, headingLevel = 2 }: { scenario: Sce
                 <div className="border-b border-desk-rule px-4 py-2 sm:px-5">
                   <StateChangeAnnouncement message={state.notice?.text} tone={state.notice?.tone} />
                 </div>
-                {phase.type !== "event" && phase.story && <StoryScene story={phase.story} variant="banner" className="border-b border-desk-rule" />}
                 <div ref={mapRef} className="scroll-mt-16">
                   <button
                     type="button"
