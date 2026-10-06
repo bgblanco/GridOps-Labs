@@ -78,6 +78,9 @@ export interface CatalogScenario {
   /** Set only when status === "available"; links to /labs/{slug}. */
   slug?: string;
   featured?: boolean;
+  /** Story-layer concept art (public/ path). Scene-setting only. */
+  image?: string;
+  imageAlt?: string;
 }
 
 // Competency shortcuts, to keep the table readable.
@@ -96,12 +99,12 @@ const WRK: CompetencyId = "WORKLOAD_PRIORITIZATION";
 export const catalog: CatalogScenario[] = [
   // 1 — Restoration & Switching (10)
   { id: "DL-001", slug: "dl-001", title: "The Easy Tie", domain: "restoration", difficulty: "operational", status: "available", featured: true, summary: "A feeder locks out. The closest tie is available — but available is not the same as suitable.", competencies: [SYS, ELE, INF, JUD] },
-  { id: "DL-002", title: "The Backfeed Question", domain: "restoration", difficulty: "operational", status: "planned", summary: "A restoration path would backfeed a section. Is that acceptable here?", competencies: [SYS, ELE] },
+  { id: "DL-002", title: "The Backfeed Question", domain: "restoration", difficulty: "operational", status: "planned", summary: "A customer generator backfeeds the line through an optional interlock. Assume energized until proven dead.", competencies: [SYS, ELE], image: "/scenarios/backfeed.jpg", imageAlt: "Pixel illustration: a lineworker tests for backfeed from a customer's generator during a storm." },
   { id: "DL-003", title: "One More Section", domain: "restoration", difficulty: "foundational", status: "planned", summary: "Pick up customers section by section without over-reaching the source.", competencies: [SYS, JUD] },
   { id: "DL-004", title: "Restore Now or Verify First", domain: "restoration", difficulty: "operational", status: "in-development", summary: "Customers are out and a quick close is tempting — before the field confirms.", competencies: [JUD, INF, EXE] },
   { id: "DL-005", title: "The Alternate Path", domain: "restoration", difficulty: "operational", status: "planned", summary: "Two ties can restore the load. The path, not the tie, decides it.", competencies: [ELE, JUD] },
   { id: "DL-006", title: "Normal Is Not Restored", domain: "restoration", difficulty: "operational", status: "in-development", summary: "Customers are back on, but the system is still in an abnormal configuration.", competencies: [SYS, JUD] },
-  { id: "DL-007", title: "Parallel for a Moment", domain: "restoration", difficulty: "advanced", status: "planned", summary: "A make-before-break step briefly parallels two sources. Is it within limits?", competencies: [ELE, EXE] },
+  { id: "DL-007", title: "Parallel for a Moment", domain: "restoration", difficulty: "advanced", status: "planned", summary: "Closing a normally-open tie parallels two feeders. You saw a tie; the grid saw a parallel.", competencies: [ELE, EXE], image: "/scenarios/parallel.jpg", imageAlt: "Pixel illustration: a normally-open tie between two feeders, about to be closed into a parallel." },
   { id: "DL-008", title: "The Last Customer Block", domain: "restoration", difficulty: "foundational", status: "planned", summary: "The final isolated block can only come back after a repair. Sequence the rest.", competencies: [SYS, JUD] },
   { id: "DL-009", title: "Return to Normal", domain: "restoration", difficulty: "operational", status: "planned", summary: "The repair is done. Restore the normal configuration without a second interruption.", competencies: [SYS, EXE] },
   { id: "DL-010", title: "The Unexpected Bottleneck", domain: "restoration", difficulty: "advanced", status: "planned", summary: "The obvious restoration overloads a segment no one was watching.", competencies: [ELE, SYS, JUD] },
@@ -110,7 +113,7 @@ export const catalog: CatalogScenario[] = [
   { id: "DL-011", title: "Frozen in Time", domain: "scada", difficulty: "operational", status: "planned", summary: "An analog hasn't moved in an hour. Is the system steady, or is the point stale?", competencies: [INF, SYS] },
   { id: "DL-012", title: "Control Failed", domain: "scada", difficulty: "operational", status: "planned", summary: "A remote open didn't take. Decide the next move with the device state uncertain.", competencies: [INF, EXE] },
   { id: "DL-013", title: "The Quiet RTU", domain: "scada", difficulty: "foundational", status: "planned", summary: "An RTU drops off. What can you still trust downstream of it?", competencies: [INF, SYS] },
-  { id: "DL-014", title: "Closed on the Screen", domain: "scada", difficulty: "operational", status: "in-development", summary: "A switch indicates closed; the crew says the blades aren't fully seated.", competencies: [INF, SYS, JUD] },
+  { id: "DL-014", title: "Closed on the Screen", domain: "scada", difficulty: "operational", status: "in-development", summary: "SCADA says the switch is open; the field says closed. Status is not the same as state.", competencies: [INF, SYS, JUD], image: "/scenarios/status-vs-state.jpg", imageAlt: "Pixel illustration: SCADA shows a switch open while the field switch reads closed." },
   { id: "DL-015", title: "Partial Visibility", domain: "scada", difficulty: "operational", status: "planned", summary: "Half the feeder's points are reporting. Act, or wait for the rest?", competencies: [INF, JUD] },
   { id: "DL-016", title: "The Missing Analog", domain: "scada", difficulty: "foundational", status: "planned", summary: "The loading value you need isn't there. Infer it, or get it another way.", competencies: [INF, ELE] },
   { id: "DL-017", title: "Communications Lost", domain: "scada", difficulty: "advanced", status: "planned", summary: "A regional comms outage removes both visibility and control at once.", competencies: [INF, SYS, WRK] },
@@ -128,7 +131,7 @@ export const catalog: CatalogScenario[] = [
 
   // 4 — Alarm Management & Situational Awareness (8)
   { id: "DL-027", title: "First Alarm Isn't the Cause", domain: "alarms", difficulty: "operational", status: "planned", summary: "The first alarm to land is rarely the first thing that happened.", competencies: [SYS, JUD] },
-  { id: "DL-028", title: "47 Alarms", domain: "alarms", difficulty: "advanced", status: "planned", summary: "An alarm storm hits. Find the event inside the noise.", competencies: [WRK, SYS] },
+  { id: "DL-028", title: "47 Alarms", domain: "alarms", difficulty: "advanced", status: "planned", summary: "An alarm storm hits — hundreds active. Find the one that actually matters.", competencies: [WRK, SYS], image: "/scenarios/alarm-storm.jpg", imageAlt: "Pixel illustration: a control room facing hundreds of active alarms during a storm, one critical alarm highlighted." },
   { id: "DL-029", title: "One Alarm in the Noise", domain: "alarms", difficulty: "operational", status: "planned", summary: "A single critical alarm is buried among nuisance alarms.", competencies: [WRK, SYS] },
   { id: "DL-030", title: "Clear Doesn't Mean Normal", domain: "alarms", difficulty: "foundational", status: "planned", summary: "The alarms cleared. The system is still not in a normal state.", competencies: [SYS, JUD] },
   { id: "DL-031", title: "Two Feeders, One Minute", domain: "alarms", difficulty: "advanced", status: "planned", summary: "Two feeder events arrive almost together. Which gets attention first?", competencies: [WRK, JUD] },

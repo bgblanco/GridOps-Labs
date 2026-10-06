@@ -37,6 +37,7 @@ export function DecisionLabsView() {
     () => catalog.filter((s) => (domain === "all" || s.domain === domain) && (difficulty === "all" || s.difficulty === difficulty)),
     [domain, difficulty],
   );
+  const featured = catalog.filter((s) => s.image);
 
   return (
     <>
@@ -68,7 +69,17 @@ export function DecisionLabsView() {
         </dl>
       </div>
 
-      <Section id="library" tight>
+      {/* Featured concept art */}
+      <Section id="featured" eyebrow="A look at the labs" title="A few of the situations you'll practice." tight
+        intro={<p>Concept scenes from Summit Grid. Each lab puts you on the desk for one of these moments.</p>}>
+        <ul className="mt-8 grid gap-5 sm:grid-cols-2">
+          {featured.map((s) => (
+            <FeaturedCard key={s.id} s={s} />
+          ))}
+        </ul>
+      </Section>
+
+      <Section id="library" eyebrow="Browse" title="The full curriculum." tight>
         {/* Filters */}
         <div className="grid gap-4">
           <FilterRow label="Domain">
@@ -142,6 +153,41 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
     >
       {children}
     </button>
+  );
+}
+
+function FeaturedCard({ s }: { s: CatalogScenario }) {
+  const playable = s.status === "available" && s.slug;
+  return (
+    <li className="flex flex-col overflow-hidden rounded-[4px] border border-rule bg-surface">
+      <div className="relative aspect-video overflow-hidden border-b border-rule bg-desk">
+        {/* Story-layer concept art — scene-setting only, not the interactive one-line. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={s.image} alt={s.imageAlt ?? s.title} width={1200} height={675} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+        <span
+          className="nameplate absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-[2px] border bg-[color-mix(in_srgb,#0d161c_80%,transparent)] px-1.5 py-0.5 text-[0.62rem]"
+          style={{ color: STATUS_COLOR[s.status], borderColor: STATUS_COLOR[s.status] }}
+        >
+          <span aria-hidden="true">{s.status === "available" ? "●" : s.status === "in-development" ? "◐" : "○"}</span>
+          {STATUS_LABEL[s.status]}
+        </span>
+      </div>
+      <div className="flex flex-1 flex-col p-4">
+        <div className="flex items-center justify-between gap-2">
+          <span className="mono text-xs text-muted">{s.id}</span>
+          <span className="mono text-[0.7rem] uppercase tracking-wide text-muted">{DOMAIN_LABEL[s.domain]} · {DIFFICULTY_LABEL[s.difficulty]}</span>
+        </div>
+        <h3 className="mt-1.5 font-display text-[1.3rem] font-semibold leading-tight text-ink">{s.title}</h3>
+        <p className="mt-2 flex-1 text-[0.95rem] leading-relaxed text-ink-2">{s.summary}</p>
+        <div className="mt-4">
+          {playable ? (
+            <Link href={`/labs/${s.slug}`} className="btn btn-ink min-h-[40px] px-4 text-sm">Try lab</Link>
+          ) : (
+            <span className="text-sm text-muted">{s.status === "in-development" ? "In development" : "Planned"}</span>
+          )}
+        </div>
+      </div>
+    </li>
   );
 }
 

@@ -78,7 +78,23 @@ export function HomeView() {
         title="Practice the problems that don't happen often enough to train on."
         intro={<p>50+ scenarios planned across eight operational domains and three difficulty levels. One grid, Summit Grid, with dozens of distinct operating problems — so a rare event isn&apos;t the first time an operator reasons through it.</p>}
       >
-        <ul className="mt-10 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
+        <figure className="mt-10 overflow-hidden rounded-[4px] border border-rule">
+          {/* Story-layer concept art — scene-setting only, not the interactive one-line. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/scenarios/restoration-blocked.jpg"
+            alt="Pixel illustration: a control-room one-line showing three feeders restored while a crew works an active, grounded work zone."
+            width={1200}
+            height={675}
+            loading="lazy"
+            decoding="async"
+            className="block w-full"
+          />
+          <figcaption className="border-t border-rule bg-bg px-4 py-2 text-sm text-muted">
+            A GridOps debrief on Summit Grid: every feeder restored — including the section that was still a tagged, grounded work zone.
+          </figcaption>
+        </figure>
+        <ul className="mt-12 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
           {DOMAINS.map((d) => (
             <li key={d.id} className="border-t-2 border-ink pt-3">
               <h3 className="font-display text-[1.1rem] font-semibold leading-tight text-ink">{d.name}</h3>
